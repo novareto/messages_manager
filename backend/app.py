@@ -1,22 +1,29 @@
-from enum import Enum
-from typing import List, Optional
+import json
 from datetime import datetime
-from sqlalchemy import create_engine
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker, Session
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
-from sqlalchemy.orm import relationship
-from pydantic import BaseModel
-from starlette.responses import Response
+from enum import Enum
+from typing import Type, Any, Dict, List, Optional
+
 from fastapi import Depends, FastAPI
+from pydantic import BaseModel
+from pydantic.schema import schema
+from starlette.responses import Response
+from starlette.middleware.cors import CORSMiddleware
+
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import Session, sessionmaker
 import sqlalchemy as sa
-from sqlalchemy.orm import Session
+
+
+origins = [
+    "http://localhost",
+    "http://localhost:8091",
+]
 
 
 SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
 
 
-engine = create_engine(
+engine = sa.create_engine(
     SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
 )
 
@@ -24,6 +31,13 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 class Level(str, Enum):
@@ -69,8 +83,19 @@ class MessageModel(BaseModel):
     class Config:
         orm_mode = True
 
+        @staticmethod
+        def schema_extra(schema: Dict[str, Any], model: Type['MessageModel']) -> None:
+            # We don't want the `id` in the schema, it's added later.
+            schema['properties'].pop('id')
+
 
 Base.metadata.create_all(bind=engine)
+
+
+@app.get("/messages/new")
+def message_schema():
+    msg_schema = schema([MessageModel], title='Message schema')
+    return json.dumps(msg_schema, indent=2)
 
 
 def create_message(db: Session, msg: MessageModel):
@@ -81,7 +106,7 @@ def create_message(db: Session, msg: MessageModel):
     return item
 
 
-@app.post("/messages", response_model=MessageModel)
+@app.post("/messages/new", response_model=MessageModel)
 def create_new_message(model: MessageModel, db: Session=Depends(get_db)):
     return create_message(db=db, msg=model)
 

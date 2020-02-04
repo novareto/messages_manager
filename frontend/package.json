@@ -11,15 +11,20 @@
         "vue": "^2.6.10",
         "vue-cast-props": "^0.0.5",
         "vue-the-mask": "^0.11.1",
-        "moment": "^2.24.0",
+        "@koumoul/vuetify-jsonschema-form": "^0.36.0",
+        "axios": "^0.19.2",
+        "vue-axios": "^2.1.5",
+        "vuetify": "^2.2.8"
     },
     "devDependencies": {
         "@vue/cli-plugin-babel": "^3.0.4",
+        "@vue/eslint-config-prettier": "^6.0.0",
         "@vue/cli-plugin-eslint": "^3.0.4",
         "@vue/cli-service": "^3.0.4",
         "babel-eslint": "^10.0.1",
         "eslint": "^5.8.0",
         "eslint-plugin-vue": "^5.0.0-0",
+        "eslint-plugin-prettier": "^3.1.2",
         "vue-template-compiler": "^2.6.10"
     },
     "eslintConfig": {
