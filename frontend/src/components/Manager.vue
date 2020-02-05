@@ -1,30 +1,21 @@
 <template>
-    <div>
-      <v-form v-model="formValid">
-        <schema
-            :schema="schema"
-            :model="dataObject"
-            :options="options"
-            @error="showError"
-            @change="showChange"
-            @input="showInput" />
-      </v-form>
+  <div>
+    <FormSchema ref="formSchema" v-model="model" @submit="submit">
+      <button type="submit">Submit</button>
+    </FormSchema>
   </div>
 </template>
 
 <script>
-import VJsonschemaForm from '@koumoul/vuetify-jsonschema-form'
-import '@koumoul/vuetify-jsonschema-form/dist/main.css'
+import FormSchema from '@formschema/native'
 
 export default {
-    components: {
-        schema: VJsonschemaForm
-    },
-    mounted () {
+    components: { FormSchema },
+    created() {
         this.axios.get('http://localhost:8000/messages/new').then(
             (response) => {
-                console.log(response.data);
-                this.schema = JSON.parse(response.data);
+                let schema = JSON.parse(response.data);
+                this.$refs.formSchema.load(schema);
             },
             (error) => {
                 console.log(error);
@@ -33,25 +24,13 @@ export default {
     },
     data() {
         return {
-            schema: {},
-            dataObject: {},
-            formValid: false,
-            options: {
-                debug: false,
-                disableAll: false,
-                autoFoldObjects: true
-            }
+            model: {}
         }
     },
     methods: {
-        showError(err) {
-            window.alert(err)
-        },
-        showChange(e) {
-            console.log('"change" event', e)
-        },
-        showInput(e) {
-            console.log('"input" event', e)
+        submit (e) {
+            e.preventDefault();
+            console.log(model);
         }
     }
 };

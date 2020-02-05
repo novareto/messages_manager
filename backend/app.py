@@ -94,8 +94,9 @@ Base.metadata.create_all(bind=engine)
 
 @app.get("/messages/new")
 def message_schema():
-    msg_schema = schema([MessageModel], title='Message schema')
-    return json.dumps(msg_schema, indent=2)
+    msg_schema = MessageModel.schema()
+    msg_schema['$schema'] = 'http://json-schema.org/draft-04/schema#'
+    return json.dumps(msg_schema)
 
 
 def create_message(db: Session, msg: MessageModel):
